@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate your day</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #fce4ec;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #d81b60;
+        }
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+        .star {
+            font-size: 40px;
+            cursor: pointer;
+            color: #ccc;  /* Default grey */
+            transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .star.hovered,
+        .star.selected {
+            color: gold;  /* Highlight when hovered or selected */
+            transform: scale(1.2);
+        }
+        .mood-buttons {
+            margin-top: 10px;
+        }
+        .mood {
+            font-size: 25px;
+            cursor: pointer;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .mood:hover {
+            transform: scale(1.2);
+        }
+        .happy { background: #ffeb3b; }
+        .neutral { background: #90caf9; }
+        .sad { background: #ef9a9a; }
+        .submit-btn {
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 18px;
+            background: #ff4081;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .submit-btn:hover {
+            background: #d81b60;
+            transform: scale(1.05);
+        }
+        #message {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Rate Your Day 🌟</h2>
+        <div class="stars">
+            <span class="star" data-value="1">⭐</span>
+            <span class="star" data-value="2">⭐</span>
+            <span class="star" data-value="3">⭐</span>
+            <span class="star" data-value="4">⭐</span>
+            <span class="star" data-value="5">⭐</span>
+        </div>
+        <h2>Select Your Mood 😊</h2>
+        <div class="mood-buttons">
+            <span class="mood happy" data-value="Happy">😊</span>
+            <span class="mood neutral" data-value="Neutral">😐</span>
+            <span class="mood sad" data-value="Sad">😢</span>
+        </div>
+        <button class="submit-btn">Submit Feedback</button>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        let selectedRating = null;
+
+        document.querySelectorAll('.star').forEach((star, index, stars) => {
+            star.addEventListener('mouseenter', function() {
+                stars.forEach((s, i) => {
+                    s.classList.toggle('hovered', i <= index);
+                });
+            });
+
+            star.addEventListener('mouseleave', function() {
+                stars.forEach(s => s.classList.remove('hovered'));
+            });
+
+            star.addEventListener('click', function() {
+                selectedRating = this.getAttribute('data-value');
+                stars.forEach((s, i) => {
+                    s.classList.toggle('selected', i < selectedRating);
+                });
+            });
+        });
+
+        let selectedMood = null;
+        document.querySelectorAll('.mood').forEach(mood => {
+            mood.addEventListener('click', function() {
+                document.querySelectorAll('.mood').forEach(m => m.style.border = "none");
+                this.style.border = "3px solid black";
+                selectedMood = this.getAttribute('data-value');
+            });
+        });
+
+        document.querySelector('.submit-btn').addEventListener('click', function() {
+            if (!selectedRating || !selectedMood) {
+                document.getElementById('message').textContent = "Please select a rating and a mood!";
+                return;
+            }
+
+            fetch('/workload-b', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ rating: selectedRating, mood: selectedMood })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').textContent = data.message;
+            })
+            .catch(error => {
+                document.getElementById('message').textContent = "Error submitting feedback!";
+            });
+        });
+    </script>
+</body>
+</html>
