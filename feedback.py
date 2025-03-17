@@ -19,6 +19,11 @@ def init_db():
 
 init_db()
 
+# Route for homepage
+@app.route('/')
+def home():
+    return render_template('home.html')  # Render homepage template
+
 @app.route('/workload-b', methods=['GET', 'POST'])
 def workload_b():
     if request.method == 'POST':
